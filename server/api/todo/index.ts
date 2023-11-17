@@ -2,7 +2,6 @@ import { db } from "../../db";
 import { v4 as uuid } from "uuid";
 
 export default defineEventHandler(async (e) => {
-  console.log({ e });
   const method = e.req.method;
 
   if (method === "GET") {
@@ -12,7 +11,8 @@ export default defineEventHandler(async (e) => {
   if (method === "POST") {
     const body = await useBody(e);
 
-    if (!body.item) throw new Error();
+    if (!body.item)
+      throw new Error("item body has problem, Please check youre body request");
 
     const newTodo = {
       id: uuid(),
@@ -26,8 +26,10 @@ export default defineEventHandler(async (e) => {
   }
 
   if (method === "PUT") {
+
   }
 
   if (method === "DELETE") {
+  
   }
 });
