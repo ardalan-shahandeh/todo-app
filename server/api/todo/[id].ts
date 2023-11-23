@@ -1,4 +1,5 @@
 import { db } from "../../db";
+import { sendError } from "h3";
 
 export default defineEventHandler((e) => {
   const method = e.req.method;
@@ -6,9 +7,7 @@ export default defineEventHandler((e) => {
   const { id } = context.params;
 
   const findTodoById = (todoId) => {
-    // 2) find todo in db
     let index;
-
     const todo = db.todos.find((t, i) => {
       if (t.id === todoId) {
         index = i;
@@ -17,8 +16,15 @@ export default defineEventHandler((e) => {
       return false;
     });
 
-    // 3) throw error if todo is not found
-    if (!todo) throw new Error();
+    if (!todo) {
+      const TodoNotFoundError = createError({
+        statusCode: 404,
+        statusMessage: "Todo not found",
+        data: {},
+      });
+
+      sendError(e, TodoNotFoundError);
+    }
 
     return { todo, index };
   };
@@ -26,18 +32,18 @@ export default defineEventHandler((e) => {
   if (method === "PUT") {
     const { todo, index } = findTodoById(id);
 
-    const updatedTodo = {
+    const updateTodo = {
       ...todo,
       completed: !todo.completed,
     };
 
-    db.todos[index] = updatedTodo;
+    db.todos[index] = updateTodo;
 
-    return updatedTodo;
+    return updateTodo;
   }
 
   if (method === "DELETE") {
-    const { todo, index } = findTodoById(id);
+    const { index } = findTodoById(id);
 
     db.todos.splice(index, 1);
 

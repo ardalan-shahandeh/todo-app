@@ -1,5 +1,6 @@
 import { db } from "../../db";
 import { v4 as uuid } from "uuid";
+import { sendError } from "h3";
 
 export default defineEventHandler(async (e) => {
   const method = e.req.method;
@@ -11,8 +12,15 @@ export default defineEventHandler(async (e) => {
   if (method === "POST") {
     const body = await useBody(e);
 
-    if (!body.item)
-      throw new Error("item body has problem, Please check youre body request");
+    if (!body.item) {
+      const TodoNotFoundError = createError({
+        statusCode: 400,
+        statusMessage: "No item provided",
+        data: {},
+      });
+
+      sendError(e, TodoNotFoundError);
+    }
 
     const newTodo = {
       id: uuid(),
@@ -23,13 +31,5 @@ export default defineEventHandler(async (e) => {
     db.todos.push(newTodo);
 
     return newTodo;
-  }
-
-  if (method === "PUT") {
-
-  }
-
-  if (method === "DELETE") {
-  
   }
 });
