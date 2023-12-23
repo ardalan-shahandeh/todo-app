@@ -2,10 +2,13 @@ import { db } from "../../db";
 import { sendError } from "h3";
 
 export default defineEventHandler((e) => {
+  // 1)Extract the path parameter
+
   const method = e.req.method;
   const context = e.context;
   const { id } = context.params;
 
+  // 2) find todo in db
   const findTodoById = (todoId) => {
     let index;
     const todo = db.todos.find((t, i) => {
@@ -16,6 +19,7 @@ export default defineEventHandler((e) => {
       return false;
     });
 
+    // 3)throw error if todo is not found
     if (!todo) {
       const TodoNotFoundError = createError({
         statusCode: 404,
@@ -32,6 +36,7 @@ export default defineEventHandler((e) => {
   if (method === "PUT") {
     const { todo, index } = findTodoById(id);
 
+    // 4)update the completed status
     const updateTodo = {
       ...todo,
       completed: !todo.completed,
@@ -39,6 +44,7 @@ export default defineEventHandler((e) => {
 
     db.todos[index] = updateTodo;
 
+    // 5) Return the update todo
     return updateTodo;
   }
 
